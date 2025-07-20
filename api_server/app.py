@@ -28,7 +28,26 @@ def load_knn_model():
     """Load KNN model and metadata on startup."""
     global model, metadata, model_loaded
     
-    models_dir = os.path.join(os.path.dirname(os.path.dirname(__file__)), "Models")
+    # Try multiple possible paths for Models directory
+    possible_paths = [
+        os.path.join(os.path.dirname(os.path.dirname(__file__)), "Models"),  # Original path
+        os.path.join(os.getcwd(), "Models"),  # Current working directory
+        "Models",  # Relative path
+        "../Models"  # Parent directory
+    ]
+    
+    models_dir = None
+    for path in possible_paths:
+        if os.path.exists(path):
+            models_dir = path
+            print(f"✅ Found Models directory at: {path}")
+            break
+    
+    if not models_dir:
+        print("❌ Models directory not found in any location")
+        print(f"Current working directory: {os.getcwd()}")
+        print(f"Script directory: {os.path.dirname(__file__)}")
+        return False
     
     try:
         # Find KNN files
