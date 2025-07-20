@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  knn-api:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - FLASK_DEBUG=0
+    restart: unless-stopped
+    volumes:
+      - ./Models:/app/Models:ro  # Mount models as read-only
