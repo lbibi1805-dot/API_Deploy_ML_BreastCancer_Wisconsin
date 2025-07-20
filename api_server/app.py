@@ -28,6 +28,11 @@ def load_knn_model():
     """Load KNN model and metadata on startup."""
     global model, metadata, model_loaded
     
+    print("🔍 DEBUG: Starting model loading process...")
+    print(f"🔍 DEBUG: Current working directory: {os.getcwd()}")
+    print(f"🔍 DEBUG: Script file location: {__file__}")
+    print(f"🔍 DEBUG: Script directory: {os.path.dirname(__file__)}")
+    
     # Try multiple possible paths for Models directory
     possible_paths = [
         os.path.join(os.path.dirname(os.path.dirname(__file__)), "Models"),  # Original path
@@ -35,6 +40,11 @@ def load_knn_model():
         "Models",  # Relative path
         "../Models"  # Parent directory
     ]
+    
+    print(f"🔍 DEBUG: Checking {len(possible_paths)} possible paths:")
+    for i, path in enumerate(possible_paths):
+        exists = os.path.exists(path)
+        print(f"🔍 DEBUG: Path {i+1}: {path} -> {'EXISTS' if exists else 'NOT FOUND'}")
     
     models_dir = None
     for path in possible_paths:
@@ -47,18 +57,35 @@ def load_knn_model():
         print("❌ Models directory not found in any location")
         print(f"Current working directory: {os.getcwd()}")
         print(f"Script directory: {os.path.dirname(__file__)}")
+        # List files in current directory for debugging
+        try:
+            print("🔍 DEBUG: Files in current directory:")
+            for item in os.listdir(os.getcwd()):
+                print(f"   - {item}")
+        except Exception as e:
+            print(f"🔍 DEBUG: Error listing current directory: {e}")
         return False
     
     try:
+        print(f"🔍 DEBUG: Looking for KNN files in: {models_dir}")
+        files_in_models = os.listdir(models_dir)
+        print(f"🔍 DEBUG: Files in Models directory: {files_in_models}")
+        
         # Find KNN files
         knn_model_file = None
         knn_metadata_file = None
         
-        for filename in os.listdir(models_dir):
+        for filename in files_in_models:
+            print(f"🔍 DEBUG: Checking file: {filename}")
             if filename.startswith('KNN') and filename.endswith('.joblib'):
                 knn_model_file = filename
+                print(f"✅ DEBUG: Found KNN model file: {filename}")
             elif filename.startswith('KNN') and filename.endswith('_metadata.json'):
                 knn_metadata_file = filename
+                print(f"✅ DEBUG: Found KNN metadata file: {filename}")
+        
+        print(f"🔍 DEBUG: Model file: {knn_model_file}")
+        print(f"🔍 DEBUG: Metadata file: {knn_metadata_file}")
         
         if not knn_model_file or not knn_metadata_file:
             print("❌ KNN model files not found")
