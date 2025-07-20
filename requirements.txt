@@ -28,6 +28,11 @@ plotly-express>=0.4.1
 # For better data handling
 openpyxl>=3.0.0
 
+# API Server deployment
+flask>=3.0.0
+flask-cors>=4.0.0
+gunicorn>=21.2.0
+
 # Version info
 # Updated: July 2025
 # Features: Complete 9-feature support, Enhanced UI, Medical-grade predictions
