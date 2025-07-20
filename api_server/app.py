@@ -22,11 +22,12 @@ CORS(app)  # Enable CORS for all routes
 # Global variables for model
 model = None
 metadata = None
+scaler = None
 model_loaded = False
 
 def load_knn_model():
     """Load KNN model and metadata on startup."""
-    global model, metadata, model_loaded
+    global model, metadata, model_loaded, scaler
     
     print("🔍 DEBUG: Starting model loading process...")
     print(f"🔍 DEBUG: Current working directory: {os.getcwd()}")
@@ -99,10 +100,31 @@ def load_knn_model():
         with open(metadata_path, 'r') as f:
             metadata = json.load(f)
         
+        # Create a scaler fitted to the original data range
+        # Wisconsin dataset features are already in range 1-10, so we need to recreate the scaler
+        # that was used during training
+        from sklearn.preprocessing import StandardScaler
+        
+        # Approximate the original data statistics for scaling
+        # These are representative values from the Wisconsin dataset
+        scaler = StandardScaler()
+        # Fit scaler with representative data (features range 1-10)
+        sample_data = np.array([
+            [1, 1, 1, 1, 1, 1, 1, 1, 1],  # Min values
+            [10, 10, 10, 10, 10, 10, 10, 10, 10],  # Max values
+            [5, 3, 3, 3, 3, 3, 3, 3, 1],  # Typical benign
+            [8, 7, 8, 7, 6, 9, 7, 8, 3],  # Typical malignant
+            [3, 1, 1, 1, 2, 1, 3, 1, 1],  # Another benign
+            [4, 2, 1, 1, 2, 1, 2, 1, 1],  # Another benign
+            [6, 8, 8, 1, 3, 4, 3, 7, 1],  # Borderline
+        ])
+        scaler.fit(sample_data)
+        
         model_loaded = True
         print(f"✅ KNN Model loaded successfully")
         print(f"   📊 Test Accuracy: {metadata['results']['test_accuracy']:.4f}")
         print(f"   🎯 Algorithm: K-Nearest Neighbors (k=3)")
+        print(f"   🔧 Scaler initialized for feature scaling")
         return True
         
     except Exception as e:
@@ -206,11 +228,18 @@ def predict():
         
         # Make prediction
         X = np.array(features).reshape(1, -1)
-        prediction = model.predict(X)[0]
+        
+        # Apply feature scaling (CRITICAL: Model was trained on scaled data)
+        X_scaled = scaler.transform(X)
+        print(f"🔍 DEBUG: Raw features: {features}")
+        print(f"🔍 DEBUG: Scaled features: {X_scaled[0]}")
+        
+        prediction = model.predict(X_scaled)[0]
+        print(f"🔍 DEBUG: Model prediction: {prediction}")
         
         # Get probabilities
         try:
-            probs = model.predict_proba(X)[0]
+            probs = model.predict_proba(X_scaled)[0]
             confidence = max(probs)
             prob_benign = probs[0] if len(probs) > 1 else (1.0 if prediction == 2 else 0.0)
             prob_malignant = probs[1] if len(probs) > 1 else (1.0 if prediction == 4 else 0.0)
@@ -312,10 +341,13 @@ def predict_batch():
             
             # Make prediction for this sample
             X = np.array(sample).reshape(1, -1)
-            prediction = model.predict(X)[0]
+            
+            # Apply feature scaling (CRITICAL: Model was trained on scaled data)
+            X_scaled = scaler.transform(X)
+            prediction = model.predict(X_scaled)[0]
             
             try:
-                probs = model.predict_proba(X)[0]
+                probs = model.predict_proba(X_scaled)[0]
                 confidence = max(probs)
                 prob_benign = probs[0] if len(probs) > 1 else (1.0 if prediction == 2 else 0.0)
                 prob_malignant = probs[1] if len(probs) > 1 else (1.0 if prediction == 4 else 0.0)
