@@ -1,45 +1,34 @@
-# KNN Breast Cancer Prediction API
+# 🚀 KNN Breast Cancer API Server
 
-Flask-based REST API server để serve model KNN cho web applications.
+**Flask application cho KNN breast cancer prediction**
 
-**🎯 Model Performance:**
-- **Algorithm**: K-Nearest Neighbors (k=3)
-- **Test Accuracy**: 97.08%
-- **F1-Score**: 97.09%
-- **Dataset**: Wisconsin Breast Cancer Dataset (699 samples)
+## Quick Start
 
-**🔧 Technical Details:**
-- **Framework**: Flask + gunicorn
-- **CORS**: Enabled for React/Express integration
-- **Feature Scaling**: StandardScaler applied (CRITICAL for correct predictions)
-- **Input Format**: Raw features (1-10 range) → Auto-scaled internally
-- **Output**: JSON với medical interpretation
-
-## 🚀 Quick Start
-
-**Production URL:** https://api-deploy-ml-breastcancer-wisconsin.onrender.com
-
-```bash
-# Test API
-curl https://api-deploy-ml-breastcancer-wisconsin.onrender.com/
-
-# Benign prediction
-curl -X POST https://api-deploy-ml-breastcancer-wisconsin.onrender.com/predict \
-  -H "Content-Type: application/json" \
-  -d '{"features": [2, 1, 1, 1, 2, 1, 2, 1, 1]}'
-
-# Malignant prediction  
-curl -X POST https://api-deploy-ml-breastcancer-wisconsin.onrender.com/predict \
-  -H "Content-Type: application/json" \
-  -d '{"features": [8, 7, 8, 7, 6, 9, 7, 8, 3]}'
-```
-
-**Local Development:**
 ```bash
 pip install -r requirements.txt
 python app.py
 # Server: http://localhost:5000
 ```
+
+## Live Production
+
+**URL**: https://api-deploy-ml-breastcancer-wisconsin.onrender.com
+
+**API Documentation**: Xem main README.md ở repository root
+
+## Local Testing
+
+```bash
+# Test local server
+curl http://localhost:5000/
+
+# Test prediction
+curl -X POST http://localhost:5000/predict \
+  -H "Content-Type: application/json" \
+  -d '{"features": [2, 1, 1, 1, 2, 1, 2, 1, 1]}'
+```
+
+**📝 Complete API documentation available in main README.md**
 
 ### 1. Cài đặt dependencies
 ```bash
