@@ -2,7 +2,44 @@
 
 Flask-based REST API server để serve model KNN cho web applications.
 
+**🎯 Model Performance:**
+- **Algorithm**: K-Nearest Neighbors (k=3)
+- **Test Accuracy**: 97.08%
+- **F1-Score**: 97.09%
+- **Dataset**: Wisconsin Breast Cancer Dataset (699 samples)
+
+**🔧 Technical Details:**
+- **Framework**: Flask + gunicorn
+- **CORS**: Enabled for React/Express integration
+- **Feature Scaling**: StandardScaler applied (CRITICAL for correct predictions)
+- **Input Format**: Raw features (1-10 range) → Auto-scaled internally
+- **Output**: JSON với medical interpretation
+
 ## 🚀 Quick Start
+
+**Production URL:** https://api-deploy-ml-breastcancer-wisconsin.onrender.com
+
+```bash
+# Test API
+curl https://api-deploy-ml-breastcancer-wisconsin.onrender.com/
+
+# Benign prediction
+curl -X POST https://api-deploy-ml-breastcancer-wisconsin.onrender.com/predict \
+  -H "Content-Type: application/json" \
+  -d '{"features": [2, 1, 1, 1, 2, 1, 2, 1, 1]}'
+
+# Malignant prediction  
+curl -X POST https://api-deploy-ml-breastcancer-wisconsin.onrender.com/predict \
+  -H "Content-Type: application/json" \
+  -d '{"features": [8, 7, 8, 7, 6, 9, 7, 8, 3]}'
+```
+
+**Local Development:**
+```bash
+pip install -r requirements.txt
+python app.py
+# Server: http://localhost:5000
+```
 
 ### 1. Cài đặt dependencies
 ```bash
@@ -246,6 +283,41 @@ CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "app:app"]
 
 ## 📊 Features Input Format
 
+**Input Features (9 features, range 1-10):**
+```javascript
+{
+  "features": [
+    clump_thickness,        // 1-10
+    uniform_cell_size,      // 1-10  
+    uniform_cell_shape,     // 1-10
+    marginal_adhesion,      // 1-10
+    single_epithelial_cell_size, // 1-10
+    bare_nuclei,           // 1-10
+    bland_chromatin,       // 1-10
+    normal_nucleoli,       // 1-10
+    mitoses               // 1-10
+  ]
+}
+```
+
+**✅ Valid Examples:**
+```json
+// Benign case
+{"features": [2, 1, 1, 1, 2, 1, 2, 1, 1]}
+
+// Malignant case  
+{"features": [8, 7, 8, 7, 6, 9, 7, 8, 3]}
+
+// Borderline case
+{"features": [5, 4, 4, 5, 7, 10, 3, 2, 1]}
+```
+
+**⚠️ Important Notes:**
+- **Feature Scaling**: API tự động scale input từ (1-10) về training format
+- **Range Validation**: Tất cả features phải trong khoảng 1-10
+- **Count Validation**: Phải có đúng 9 features
+- **Type Validation**: Chỉ chấp nhận numbers (int/float)
+
 Tất cả features phải là số từ 1-10:
 
 1. **clump_thickness**: Độ dày của khối tế bào (1-10)
@@ -260,12 +332,81 @@ Tất cả features phải là số từ 1-10:
 
 ## ⚠️ Lưu ý quan trọng
 
+### 🔧 Feature Scaling (CRITICAL)
+- **Model Training**: KNN được train với StandardScaler (mean=0, std=1)
+- **API Input**: Nhận raw data (1-10) và tự động scale
+- **Fixed Issue**: Trước đây API không scale → luôn predict Malignant
+- **Current Fix**: API áp dụng scaling chính xác → predictions đúng
+
+### 🎯 Model Accuracy
+- **Algorithm**: K-Nearest Neighbors with k=3
+- **Training Accuracy**: 97.25%
+- **Test Accuracy**: 97.08%
+- **Cross-validation**: Stable performance across folds
+- **Dataset Split**: 80% train, 20% test (stratified)
+
+### 🌐 Production Deployment
+- **Platform**: Render.com (free tier)
+- **URL**: https://api-deploy-ml-breastcancer-wisconsin.onrender.com
+- **Auto-deploy**: Linked to GitHub repository
+- **Health Check**: GET / endpoint để kiểm tra status
+- **CORS**: Enabled for cross-origin requests
+
 - API này chỉ dành cho mục đích nghiên cứu
 - Không thay thế chẩn đoán y tế chuyên nghiệp
 - Model được train trên Wisconsin Breast Cancer Dataset
 - Luôn kiểm tra tính khả dụng của model trước khi deploy production
 
 ## 🔍 Testing API
+
+### Postman Test Cases
+
+**1. Health Check:**
+```
+GET https://api-deploy-ml-breastcancer-wisconsin.onrender.com/
+```
+
+**2. Benign Prediction:**
+```json
+POST /predict
+{
+  "features": [2, 1, 1, 1, 2, 1, 2, 1, 1]
+}
+// Expected: "Benign"
+```
+
+**3. Malignant Prediction:**
+```json
+POST /predict  
+{
+  "features": [8, 7, 8, 7, 6, 9, 7, 8, 3]
+}
+// Expected: "Malignant"
+```
+
+**4. Batch Prediction:**
+```json
+POST /predict/batch
+{
+  "samples": [
+    [2, 1, 1, 1, 2, 1, 2, 1, 1],
+    [8, 7, 8, 7, 6, 9, 7, 8, 3],
+    [5, 4, 4, 5, 7, 10, 3, 2, 1]
+  ]
+}
+```
+
+**5. Error Test Cases:**
+```json
+// Invalid range
+{"features": [15, 1, 1, 1, 2, 1, 2, 1, 1]}
+
+// Wrong count
+{"features": [1, 2, 3]}
+
+// Missing field
+{"data": [1, 2, 3, 4, 5, 6, 7, 8, 9]}
+```
 
 ```bash
 # Test health check
